@@ -1,6 +1,7 @@
 import flet as ft
 from supabase import create_client, Client
 
+
 url: str = "https://gkqvcndiyyrprpndgedg.supabase.co"
 key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrcXZjbmRpeXlycHJwbmRnZWRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDIxMDM0NjYsImV4cCI6MjAxNzY3OTQ2Nn0.FDdQRXgW-_rMqIP4g5ttRwbynr-APBIlg_oFuVoOyww"
 supabase: Client = create_client(url, key)
@@ -13,17 +14,17 @@ def main(page: ft.Page):
         src=f"/testing.jpg", width=1000, height=140, fit=ft.ImageFit.COVER
     )
 
-
-    txt_nim = ft.TextField(
-        label=listAll["email"],
-        hint_text="Masukkan NIM...",
+    txt_email = ft.TextField(
+        label="EMAIL",
+        hint_text="Masukkan Email...",
         color=ft.colors.BLACK,
         border_color=ft.colors.BLUE,
         border=ft.InputBorder.UNDERLINE,
-        suffix_icon=ft.icons.TAG_FACES,
+        suffix_icon=ft.icons.EMAIL,
         cursor_color=ft.colors.BLUE,
-        keyboard_type=ft.KeyboardType.NUMBER,
+        keyboard_type=ft.KeyboardType.EMAIL,
     )
+
     txt_password = ft.TextField(
         label="PASSWORD",
         password=True,
@@ -34,13 +35,28 @@ def main(page: ft.Page):
         border=ft.InputBorder.UNDERLINE,
     )
 
+    txt_error = ft.Text(
+        "Email atau password salah!",
+        color=ft.colors.RED,
+        opacity=0,
+    )
+
     def login(e):
-        nim = txt_nim.value
+        nim = txt_email.value
         password = txt_password.value
 
-        supabase.auth.sign_in_with_password({"email": nim, "password": password})
+        try:
+            res = supabase.auth.sign_in_with_password(
+                {"email": nim, "password": password}
+            )
+            txt_email.value, txt_password.value = "", ""
+            page.update()
 
-        print(supabase.auth.get_user())
+        except:
+            txt_email.value, txt_password.value = "", ""
+
+            txt_error.opacity = 100
+            page.update()
 
     page.add(
         ft.Container(
@@ -83,10 +99,7 @@ def main(page: ft.Page):
                     ),
                     ft.Container(
                         content=ft.Column(
-                            [
-                                txt_nim,
-                                txt_password,
-                            ],
+                            [txt_email, txt_password, txt_error],
                             alignment=ft.MainAxisAlignment.CENTER,
                             spacing=20,
                         ),
